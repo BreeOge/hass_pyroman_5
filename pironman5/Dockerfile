@@ -1,4 +1,4 @@
-FROM ghcr.io/hassio-addons/ubuntu-base/aarch64:10.0.5
+FROM sunfounder/aarch64-pironman5:1.2.6
 
 ARG BUILD_VERSION
 ARG BUILD_ARCH
@@ -8,38 +8,10 @@ LABEL \
   io.hass.type="app" \
   io.hass.arch="${BUILD_ARCH}"
 
-# Dependencies retained from SunFounder's original Home Assistant add-on.
-# Use Ubuntu's packaged lgpio instead of SunFounder's legacy HTTP download/build.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        git \
-        python3 \
-        python3-pip \
-        python3-setuptools \
-        python3-lgpio \
-        libraspberrypi-bin \
-    && rm -rf /var/lib/apt/lists/*
-
-# Use the same Pironman 5 release as SunFounder's HA add-on.
-RUN git clone https://github.com/sunfounder/pironman5.git -b 1.2.7 /pironman5
-
-# Permanently remove the OLED/I2C peripheral and legacy LGPIO download hook
-# before installation.
+# Patch the already-installed SunFounder software in-place.
 COPY patch_no_oled.py /tmp/patch_no_oled.py
-RUN python3 /tmp/patch_no_oled.py /pironman5 \
+RUN python3 /tmp/patch_no_oled.py \
     && rm -f /tmp/patch_no_oled.py
-
-# Install Pironman without auto-start/reboot/device-tree/module changes.
-RUN cd /pironman5 \
-    && python3 install.py \
-        --skip-auto-start \
-        --skip-reboot \
-        --skip-dtoverlay \
-        --skip-modules \
-        --plain-text
-
-# Match SunFounder's original compatibility pin.
-RUN /opt/pironman5/venv/bin/pip install adafruit-blinka==8.55.0
 
 WORKDIR /data
 
