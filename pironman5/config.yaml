@@ -1,0 +1,32 @@
+name: "Pironman 5 - No OLED"
+description: "Pironman 5 support with the OLED/I2C code permanently disabled"
+version: "1.2.6.1"
+slug: "pironman5"
+init: false
+arch:
+  - aarch64
+startup: application
+privileged:
+  - SYS_RAWIO
+  - SYS_ADMIN
+gpio: true
+devices:
+  - /dev/spidev0.0
+  - /dev/mem
+  - /dev/vcio
+devicetree: true
+hassio_api: true
+hassio_role: "manager"
+map:
+  - addon_config:rw
+environment:
+  BLINKA_FORCECHIP: "BCM2XXX"
+  RPI_LGPIO_REVISION: "d04170"
+webui: "http://[HOST]:[PORT:34001]"
+ports:
+  34001/tcp: 34001
+ports_description:
+  34001/tcp: Pironman 5 Dashboard
+panel_icon: mdi:view-dashboard
+ingress: true
+ingress_port: 34001
