@@ -1,6 +1,6 @@
 name: "Pironman 5 - No OLED"
 description: "Pironman 5 support with the OLED/I2C code permanently disabled"
-version: "1.2.6.3"
+version: "1.2.6.4"
 slug: "pironman5"
 init: false
 arch:
@@ -18,7 +18,7 @@ devicetree: true
 hassio_api: true
 hassio_role: "manager"
 map:
-  - addon_config:rw
+  - app_config:rw
 environment:
   BLINKA_FORCECHIP: "BCM2XXX"
   RPI_LGPIO_REVISION: "d04170"
