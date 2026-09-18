@@ -40,17 +40,27 @@ for path in variant_files:
 
     path.write_text(text)
 
-# SunFounder's Pironman 5 1.2.7 installer references pm_auto@1.2.5,
-# but that old ref no longer resolves on GitHub. Pin the exact historical
-# commit that contains pm_auto version 1.2.5 so fresh rebuilds remain possible.
 install_py = root / "install.py"
 text = install_py.read_text()
+
+# SunFounder's old installer downloads lgpio over plain HTTP from abyz.me.uk.
+# The Home Assistant image installs Ubuntu's packaged python3-lgpio instead,
+# so remove the legacy download/build hook entirely.
+lgpio_hook = """    'run_commands_before_install': {
+        'Install LGPIO': 'bash install_lgpio.sh',
+    },
+"""
+if lgpio_hook not in text:
+    raise RuntimeError("Expected legacy LGPIO install hook was not found")
+text = text.replace(lgpio_hook, "")
+
+# The old pm_auto@1.2.5 ref no longer resolves. Pin its exact historical commit.
 old = "git+https://github.com/sunfounder/pm_auto.git@1.2.5"
 new = "git+https://github.com/sunfounder/pm_auto.git@1b8b4d05b50358eb09831066304d51ddec268d19"
-
 if old not in text:
     raise RuntimeError("Expected pm_auto 1.2.5 dependency was not found in install.py")
+text = text.replace(old, new)
 
-install_py.write_text(text.replace(old, new))
+install_py.write_text(text)
 
 print("Pironman 5 No-OLED patch applied successfully.")
