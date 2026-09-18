@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import sys
 
-root = Path(sys.argv[1] if len(sys.argv) > 1 else "/pironman5")
-
-variant_files = [
-    root / "pironman5" / "variants" / "pironman5.py",
-    root / "pironman5" / "variants" / "pironman5v10.py",
+roots = [
+    Path("/opt/pironman5/venv/lib"),
+    Path("/opt/pironman5"),
 ]
 
-# These peripherals are tied to the OLED path in Pironman 5 1.2.7.
-# Removing them prevents pm_auto from constructing the OLED object or
-# registering the vibration-switch callback that only wakes the OLED.
+# Patch the installed Pironman variant definitions so OLED-related peripherals
+# are no longer advertised at all.
+variant_files = []
+for root in roots:
+    if root.exists():
+        variant_files.extend(root.rglob("pironman5/variants/pironman5.py"))
+        variant_files.extend(root.rglob("pironman5/variants/pironman5v10.py"))
+
+variant_files = list(dict.fromkeys(variant_files))
+if not variant_files:
+    raise RuntimeError("Could not locate installed Pironman variant files")
+
 remove_entries = {
     '"oled",',
     "'oled',",
@@ -21,6 +27,7 @@ remove_entries = {
     "'vibration_switch',",
 }
 
+variant_changes = 0
 for path in variant_files:
     text = path.read_text()
     original = text
@@ -35,32 +42,50 @@ for path in variant_files:
     text = text.replace('"oled_enable": True', '"oled_enable": False')
     text = text.replace("'oled_enable': True", "'oled_enable': False")
 
-    if text == original:
-        raise RuntimeError(f"No OLED changes were made to {path}")
+    if text != original:
+        path.write_text(text)
+        variant_changes += 1
 
-    path.write_text(text)
+if variant_changes == 0:
+    raise RuntimeError("Pironman variant files were found but no OLED changes were applied")
 
-install_py = root / "install.py"
-text = install_py.read_text()
+# Defense in depth: also prevent the installed pm_auto 1.2.x code from ever
+# constructing or updating OLED/vibration objects even if a peripheral list
+# containing those names is supplied later.
+pm_files = []
+for root in roots:
+    if root.exists():
+        pm_files.extend(root.rglob("pm_auto/pm_auto.py"))
 
-# SunFounder's old installer downloads lgpio over plain HTTP from abyz.me.uk.
-# The Home Assistant image installs Ubuntu's packaged python3-lgpio instead,
-# so remove the legacy download/build hook entirely.
-lgpio_hook = """    'run_commands_before_install': {
-        'Install LGPIO': 'bash install_lgpio.sh',
-    },
-"""
-if lgpio_hook not in text:
-    raise RuntimeError("Expected legacy LGPIO install hook was not found")
-text = text.replace(lgpio_hook, "")
+pm_files = list(dict.fromkeys(pm_files))
+if not pm_files:
+    raise RuntimeError("Could not locate installed pm_auto/pm_auto.py")
 
-# The old pm_auto@1.2.5 ref no longer resolves. Pin its exact historical commit.
-old = "git+https://github.com/sunfounder/pm_auto.git@1.2.5"
-new = "git+https://github.com/sunfounder/pm_auto.git@1b8b4d05b50358eb09831066304d51ddec268d19"
-if old not in text:
-    raise RuntimeError("Expected pm_auto 1.2.5 dependency was not found in install.py")
-text = text.replace(old, new)
+pm_changes = 0
+replacements = {
+    "if 'oled' in peripherals:": "if False and 'oled' in peripherals:",
+    'if "oled" in peripherals:': 'if False and "oled" in peripherals:',
+    "if 'oled' in self.peripherals:": "if False and 'oled' in self.peripherals:",
+    'if "oled" in self.peripherals:': 'if False and "oled" in self.peripherals:',
+    "if 'vibration_switch' in peripherals:": "if False and 'vibration_switch' in peripherals:",
+    'if "vibration_switch" in peripherals:': 'if False and "vibration_switch" in peripherals:',
+    "if 'vibration_switch' in self.peripherals:": "if False and 'vibration_switch' in self.peripherals:",
+    'if "vibration_switch" in self.peripherals:': 'if False and "vibration_switch" in self.peripherals:',
+}
 
-install_py.write_text(text)
+for path in pm_files:
+    text = path.read_text()
+    original = text
+    for old, new in replacements.items():
+        text = text.replace(old, new)
 
-print("Pironman 5 No-OLED patch applied successfully.")
+    if text != original:
+        path.write_text(text)
+        pm_changes += 1
+
+if pm_changes == 0:
+    raise RuntimeError("pm_auto was found but no OLED/vibration guards were patched")
+
+print(f"Patched {variant_changes} Pironman variant file(s)")
+print(f"Patched {pm_changes} pm_auto file(s)")
+print("OLED/I2C path permanently disabled.")
