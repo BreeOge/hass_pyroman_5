@@ -1,5 +1,12 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+FROM ghcr.io/hassio-addons/ubuntu-base/aarch64:10.0.5
+
+ARG BUILD_VERSION
+ARG BUILD_ARCH
+
+LABEL \
+  io.hass.version="${BUILD_VERSION}" \
+  io.hass.type="app" \
+  io.hass.arch="${BUILD_ARCH}"
 
 # Dependencies retained from SunFounder's original Home Assistant add-on.
 # Use Ubuntu's packaged lgpio instead of SunFounder's legacy HTTP download/build.
