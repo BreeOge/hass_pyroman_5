@@ -1,3 +1,10 @@
+## [1.2.6.3] - 2026-09-17
+
+- Migrate the local app build to Home Assistant's current Docker BuildKit format.
+- Set the Ubuntu base image directly in Dockerfile instead of relying on legacy build.yaml.
+- Add required Home Assistant image labels.
+- Add repository.yaml for current Home Assistant app repository discovery.
+
 ## [1.2.6.2] - 2026-09-17
 
 - Replace SunFounder's legacy LGPIO source download/build with Ubuntu's packaged python3-lgpio.
