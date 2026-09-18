@@ -1,3 +1,8 @@
+## [1.2.6.2] - 2026-09-17
+
+- Replace SunFounder's legacy LGPIO source download/build with Ubuntu's packaged python3-lgpio.
+- Avoid the old plain-HTTP abyz.me.uk download that can stall Home Assistant app builds.
+
 ## [1.2.6.1] - 2026-09-17
 
 - Based on SunFounder's Home Assistant Pironman 5 app 1.2.6.
