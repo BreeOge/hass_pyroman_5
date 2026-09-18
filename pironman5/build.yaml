@@ -1,0 +1,3 @@
+# Base image retained from SunFounder's Home Assistant add-on.
+build_from:
+  aarch64: ghcr.io/hassio-addons/ubuntu-base/aarch64:10.0.5
