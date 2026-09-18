@@ -1,6 +1,6 @@
 name: "Pironman 5 - No OLED"
 description: "Pironman 5 support with the OLED/I2C code permanently disabled"
-version: "1.2.6.1"
+version: "1.2.6.2"
 slug: "pironman5"
 init: false
 arch:
