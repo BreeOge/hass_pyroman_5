@@ -1,0 +1,56 @@
+#include <tunables/global>
+
+profile pironman5 flags=(attach_disconnected,mediate_deleted,complain) {
+  #include <abstractions/base>
+
+  file,
+  signal (send) set=(kill,term,int,hup,cont),
+
+  /init ix,
+  /bin/** ix,
+  /usr/bin/** ix,
+  /run/{s6,s6-rc*,service}/** ix,
+  /package/** ix,
+  /command/** ix,
+  /etc/services.d/** rwix,
+  /etc/cont-init.d/** rwix,
+  /etc/cont-finish.d/** rwix,
+  /run/{,**} rwk,
+  /dev/tty rw,
+
+  /usr/lib/bashio/** ix,
+  /tmp/** rwk,
+  /data/** rw,
+
+  /usr/local/bin/pironman cx -> pironman,
+
+  /etc/nsswitch.conf r,
+  /usr/bin/who ix,
+  /usr/bin/mawk ix,
+
+  /sys/class/gpio/** rw,
+  /dev/mem rw,
+
+  profile pironman5 flags=(attach_disconnected,mediate_deleted,complain) {
+    #include <abstractions/base>
+
+    signal (receive) peer=*_pironman5,
+    /data/** rw,
+    /share/** rw,
+
+    /usr/local/bin/pironman5 r,
+    /opt/pironman5/venv/bin/pironman5-service r,
+    /bin/bash rix,
+    /bin/echo ix,
+    /etc/passwd r,
+    /dev/tty rw,
+
+    /etc/nsswitch.conf r,
+    /usr/bin/who ix,
+    /usr/bin/mawk ix,
+
+    /sys/class/gpio/** rw,
+    /dev/mem rw,
+    /dev/gpiomem rw,
+  }
+}
