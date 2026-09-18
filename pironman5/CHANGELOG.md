@@ -1,3 +1,16 @@
+## [1.2.6.5] - 2026-09-17
+
+- Stop rebuilding SunFounder Pironman from source.
+- Use sunfounder/aarch64-pironman5:1.2.6 as the base image.
+- Patch the installed Pironman variant definitions to remove OLED, OLED sleep, and the OLED-only vibration switch.
+- Patch installed pm_auto OLED/vibration initialization and update guards as defense in depth.
+- Keep /dev/i2c-1 unavailable to the app.
+- Eliminate build-time apt, GitHub clone, pm_auto source install, dashboard source install, and pip dependency downloads.
+
+## [1.2.6.4] - 2026-09-17
+
+- Use current app_config mapping.
+
 ## [1.2.6.3] - 2026-09-17
 
 - Migrate the local app build to Home Assistant's current Docker BuildKit format.
@@ -12,10 +25,4 @@
 
 ## [1.2.6.1] - 2026-09-17
 
-- Based on SunFounder's Home Assistant Pironman 5 app 1.2.6.
-- Build Pironman 5 1.2.7 from source instead of using the old prebuilt image.
-- Remove the OLED peripheral before installation.
-- Remove the OLED-only vibration-switch peripheral.
-- Remove access to /dev/i2c-1 from the Home Assistant app manifest.
-- Default oled_enable to false as an additional safeguard.
-- Pin the historical pm_auto 1.2.5 dependency to immutable commit 1b8b4d05b50358eb09831066304d51ddec268d19 because the old 1.2.5 ref no longer resolves.
+- Initial No-OLED custom build.
